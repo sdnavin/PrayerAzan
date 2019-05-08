@@ -1,0 +1,89 @@
+@font-face{
+    src: url(fonts/Merriweather-Light.ttf);
+    font-family: Merrilight;
+}
+@font-face{
+  src: url(fonts/Merriweather-Black.ttf);
+    font-family: Merrinormal;
+}
+@font-face{
+  src: url(fonts/Merriweather-Bold.ttf);
+    font-family: Merribold;  
+    
+}
+
+h1 {
+    font-family: Merribold;
+    font-size: 5vw;
+    font-style: normal;
+    font-weight: bold;
+    font-weight: 200;
+    text-align: right;
+    text-decoration: none;
+    text-transform: capitalize;
+    color :rgba(255,255,255,0.75);
+}
+.todaydate{
+    font-family: Merrilight;
+    font-size: 2.5vw;
+    color :rgba(255,255,255,0.75);
+    text-align: right;
+    margin: 0.5vw;
+    display: inline;
+    float:right;
+}
+.prayTimes{
+    position: absolute;
+    top: 1.25vw;
+    left: 2.5vw;
+    font-family: Merrinormal;
+    font-size: 2.5vw;
+    line-height: 2.75vw;
+}
+.nextprayer{
+    position: absolute;
+    bottom: 0;
+    right: .5vw;
+    font-family: Merribold;
+    color :rgba(255,255,255,0.75);
+    font-size: 3vw;
+    line-height: 2vw;
+}
+
+p#nextPrayer {
+    font-family: Merribold;
+}
+
+p#nextPrayer span {
+    font-family: Merrilight;
+    font-size: 2.7vw;
+}
+
+p#prayTimes {
+    font-family: Merrilight;
+    font-size:2vw;
+}
+
+p#prayTimes span {
+    font-family: Merribold;
+    font-size:2.5vw;
+    font-weight:900;
+}
+.prayButton{
+    position: absolute;
+    bottom: 1.25vw;
+    left: 1.25vw;
+    width: 12vw;
+    height: 12vw;
+    background:url("images/pray.png");
+    background-size: cover;
+}
+.languageButton{
+    position: absolute;
+    top: 1.25vw;
+    left: 1.25vw;
+    width: 2vw;
+    height: 2vw;
+    background:url("images/LANG.png");
+    background-size: cover;
+}

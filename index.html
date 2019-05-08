@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <title>TRIMOO Azan</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+    
+</head>
+
+<body style ="background: url(images/flag.jpg); background-size: cover;" >
+    
+    <audio id="myAudio">
+        <source src="audio/AzanQatar.mp3" type="audio/mpeg">
+            Your browser does not support the audio element.
+        </audio>
+        <button onclick="toggleUI()" class="languageButton" id="languageButton"></button>
+        <h1 id="headTitle" ></h1>
+        <p class="todaydate" id="currentTimer"></p>
+        <p class="todaydate" id="todaydate"></p>
+        <p class="todaydate" id="test1"></p>
+        
+        
+        <p class="prayTimes" id="prayTimes"></p>
+        <p class="nextprayer" id="nextPrayer"></p>
+        
+        <button onclick="togglePrayer()" class="prayButton" id="prayButton"></button>
+        
+        <script type="text/javascript" src="jquery-1.7.1.min.js"></script>
+        <!-- <script type="text/javascript" src="jquery-1.12.4.min.js"></script> -->
+        <script type="text/javascript" src="Localization.js"></script>
+
+        <script>
+            var currentLanguage="en";
+            // wait
+            var prayerNames;// = ["Fajer","Dhuhr","Asr","Maghrib","Isha"];
+            
+            var prayerData="";
+            var todayDate = new Date();
+            var prayerDate = [];
+            var nextPrayerNo=-1;
+            
+            var currentTimeHTML = document.getElementById("currentTimer");
+            var nextPrayerHTML = document.getElementById("nextPrayer");
+            
+            var pDate=todayDate.getDate()+"/"+(todayDate.getMonth()+1)+"/"+todayDate.getFullYear();
+            
+            // Create the event
+            var prayerEvent = new CustomEvent("playPrayer");
+            
+            var sound = document.getElementById("myAudio"); 
+
+            var prayerTimes=[];
+
+            getLocalData(currentLanguage,Start);
+            
+            function Start(){
+
+                document.getElementById("headTitle").innerHTML=currentContent.title;
+                
+                document.getElementById("todaydate").innerHTML = returnDate(todayDate);
+                
+                document.addEventListener("playPrayer", function() {
+                    playPrayer();
+                });
+                
+                prayerNames=currentContent.prayerNames;
+
+                sound.load();
+                
+                read();
+                
+                timeIntervalCall();
+
+            }
+            
+            function read() {
+                // console.log("Read");
+                $.get("prayer/prayerdata.txt", function (data) {
+                    
+                    var etaReadFile = new Date(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate()+1,1,0).getTime() - Date.now();
+                    var timeoutRead = setTimeout(function(){document.location.reload(true);}, etaReadFile);
+                    
+                    prayerData = data;
+                    fetchprayer(prayerData);
+                }, "text");
+                
+                setInterval(toggleUI, 300000); // toggle language with timer
+            }
+            
+            function fetchprayer(pdata){
+                
+                var prayerObj=$.parseJSON(pdata);
+                
+                if(prayerObj[pDate])
+                {
+                    prayerTimes=prayerObj[pDate].split(',');
+                }
+                
+                var t=0;
+                
+                for( t=0;t<prayerTimes.length;t++)
+                {
+                    prayerDate[t]= new Date();
+                    prayerDate[t].setHours(parseInt(prayerTimes[t].split(':')[0]));
+                    prayerDate[t].setMinutes(prayerTimes[t].split(':')[1]);
+                    prayerDate[t].setSeconds(0);
+                    prayerDate[t].setMilliseconds(0);
+                    
+                    if(prayerDate[t]<Date.now()){
+                        nextPrayerNo=t;
+                    }
+                }
+                prayerTimesUI();
+                showNextPrayer();
+            }
+
+            function prayerTimesUI(){
+
+                var allPrayers="";
+
+                var t=0;
+
+                for( t=0;t<prayerTimes.length;t++)
+                {
+                    allPrayers=allPrayers.concat("<span>"+prayerNames[t]+"</span> ",timeToString(prayerDate[t]),"</br>","</br>");
+                }
+                document.getElementById("prayTimes").innerHTML = allPrayers;
+            }
+            
+            function showNextPrayer(){
+                nextPrayerNo+=1;
+                
+                nextPrayerUI();
+
+                if(nextPrayerNo<(prayerNames.length))
+                {
+                    var now = new Date();
+                    var etaNextPrayer = new Date(now.getFullYear(), now.getMonth(), now.getDate(), prayerDate[nextPrayerNo].getHours(), prayerDate[nextPrayerNo].getMinutes(),0).getTime() - Date.now();
+                    var timeoutNextPrayer = setTimeout(function(){playNextPrayer();}, etaNextPrayer);
+                }
+            } 
+
+            function nextPrayerUI(){
+                var nextPray="";
+
+                if(nextPrayerNo<(prayerNames.length)){
+                    nextPray=nextPray.concat(currentContent.nextPrayer," ","<span>",prayerNames[nextPrayerNo]," ",timeToString(prayerDate[nextPrayerNo]),"</span>");
+                }
+                nextPrayerHTML.innerHTML =nextPray;
+            }
+            
+            function playNextPrayer(){
+                document.dispatchEvent(prayerEvent);
+                showNextPrayer();
+            } 
+            
+            function timeIntervalCall() {
+                // Get todays date and time
+                var now = new Date();
+                currentTimeHTML.innerHTML = timeToString(now);
+                var etaTimeInterval = new Date(now.getFullYear(), now.getMonth(), now.getDate(),((now.getMinutes()==60)?now.getHours()+1:now.getHours()),((now.getMinutes()!=60)?now.getMinutes()+1:now.getMinutes()));
+                var timeoutTimeInterval = setTimeout(function(){timeIntervalCall();}, etaTimeInterval);
+            }
+            
+            function checkTime(i) {
+                return (i < 10) ? "0" + i : i;
+            }
+            
+            function timeToString(cDate) {
+                var currentT = cDate,
+                h = checkTime((currentT.getHours() <=12) ? currentT.getHours() :currentT.getHours() - 12),
+                m = checkTime(currentT.getMinutes());
+                return returnDigits(h + ":" + m) + ((currentT.getHours() < 12) ? " "+currentContent.am : " "+currentContent.pm);
+            }
+            
+            
+            function playPrayer(){
+                //Working in signage
+                sound.muted = false;
+                sound.currentTime = 0;
+                sound.play();
+            }
+            
+            function togglePrayer(){
+                if(sound.duration > 0 && !sound.paused) {
+                    sound.pause();
+                }else{
+                    sound.muted = false;
+                    sound.currentTime = 0;
+                    sound.play();
+                }
+            }
+
+            function UpdateUI(){
+                prayerNames=currentContent.prayerNames;
+
+                document.getElementById("headTitle").innerHTML=currentContent.title;
+                
+                document.getElementById("todaydate").innerHTML = returnDate(todayDate);
+
+                prayerTimesUI();
+
+                nextPrayerUI();
+            }
+
+            function toggleUI(){
+                currentLanguage=chooseNextLanguage();
+                getLocalData(currentLanguage,UpdateUI);
+            } 
+            
+        </script>
+        
+        
+        
+    </body>
+    </html>
+    
